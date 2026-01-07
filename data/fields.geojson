@@ -1,0 +1,125 @@
+{
+  "type": "FeatureCollection",
+  "features": [
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Pachy Pétanque Club",
+        "municipality": "Waterloo",
+        "type": "club",
+        "indoor": false,
+        "lights": false,
+        "photo": "https://commons.wikimedia.org/wiki/Special:FilePath/Bouchon%20et%20trois%20boules%20P%C3%A9tanque.jpg?width=900"
+      },
+      "geometry": { "type": "Point", "coordinates": [4.39426, 50.71690] }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Singel Petanque Club",
+        "municipality": "Grimbergen",
+        "type": "club",
+        "indoor": false,
+        "lights": false,
+        "photo": "https://commons.wikimedia.org/wiki/Special:FilePath/Boules%20set.jpg?width=900"
+      },
+      "geometry": { "type": "Point", "coordinates": [4.35883, 50.91335] }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Kraainem Petanque Club",
+        "municipality": "Kraainem",
+        "type": "club",
+        "indoor": false,
+        "lights": false,
+        "photo": "https://commons.wikimedia.org/wiki/Special:FilePath/Petanque-Boules%20on%20the%20beach.jpg?width=900"
+      },
+      "geometry": { "type": "Point", "coordinates": [4.46911, 50.86203] }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Petanque Club Rode",
+        "municipality": "Sint-Genesius-Rode",
+        "type": "club",
+        "indoor": false,
+        "lights": false,
+        "photo": "https://commons.wikimedia.org/wiki/Special:FilePath/Bouchon%20et%20trois%20boules%20P%C3%A9tanque.jpg?width=900"
+      },
+      "geometry": { "type": "Point", "coordinates": [4.34643, 50.74017] }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Petanque Club Dilbeek",
+        "municipality": "Dilbeek",
+        "type": "club",
+        "indoor": false,
+        "lights": false,
+        "photo": "https://commons.wikimedia.org/wiki/Special:FilePath/Boules%20set.jpg?width=900"
+      },
+      "geometry": { "type": "Point", "coordinates": [4.25908, 50.84987] }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Royal Pétanque Club du Blanc Ry",
+        "municipality": "Ottignies-Louvain-la-Neuve",
+        "type": "club",
+        "indoor": false,
+        "lights": false,
+        "photo": "https://commons.wikimedia.org/wiki/Special:FilePath/Petanque-Boules%20on%20the%20beach.jpg?width=900"
+      },
+      "geometry": { "type": "Point", "coordinates": [4.62223, 50.66301] }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Petanque Club De Krijgers",
+        "municipality": "Oudenaarde",
+        "type": "club",
+        "indoor": false,
+        "lights": false,
+        "photo": "https://commons.wikimedia.org/wiki/Special:FilePath/Bouchon%20et%20trois%20boules%20P%C3%A9tanque.jpg?width=900"
+      },
+      "geometry": { "type": "Point", "coordinates": [3.61501, 50.85333] }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Pétanque Club Geer",
+        "municipality": "Bassenge",
+        "type": "club",
+        "indoor": false,
+        "lights": false,
+        "photo": "https://commons.wikimedia.org/wiki/Special:FilePath/Boules%20set.jpg?width=900"
+      },
+      "geometry": { "type": "Point", "coordinates": [5.54384, 50.75199] }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Petanque Club Flemalle",
+        "municipality": "Flémalle",
+        "type": "club",
+        "indoor": false,
+        "lights": false,
+        "photo": "https://commons.wikimedia.org/wiki/Special:FilePath/Petanque-Boules%20on%20the%20beach.jpg?width=900"
+      },
+      "geometry": { "type": "Point", "coordinates": [5.44802, 50.59696] }
+    },
+    {
+      "type": "Feature",
+      "properties": {
+        "name": "Boulodrome Robert Praillet",
+        "municipality": "Amay",
+        "type": "club",
+        "indoor": false,
+        "lights": false,
+        "photo": "https://commons.wikimedia.org/wiki/Special:FilePath/Bouchon%20et%20trois%20boules%20P%C3%A9tanque.jpg?width=900"
+      },
+      "geometry": { "type": "Point", "coordinates": [5.31955, 50.57751] }
+    }
+  ]
+}

@@ -1,0 +1,328 @@
+<!doctype html>
+<html lang="nl">
+<head>
+  <meta charset="utf-8" />
+  <title>Pétanquevelden België</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+
+  <style>
+    html, body { height: 100%; margin: 0; font-family: system-ui, -apple-system, BlinkMacSystemFont; background:#f6f6f6; }
+
+    /* Layout */
+    #app { height: 100%; display: grid; grid-template-columns: 360px 1fr; }
+    #sidebar { background: #fff; border-right: 1px solid #eee; display: flex; flex-direction: column; min-width: 280px; }
+    #sidebarHeader { padding: 16px; border-bottom: 1px solid #eee; }
+    #sidebarTitle { font-weight: 800; font-size: 18px; }
+    #sidebarMeta { margin-top: 6px; color: #666; font-size: 13px; }
+
+    #list { overflow: auto; padding: 8px; }
+    .item {
+      padding: 10px 12px; border: 1px solid #eee; border-radius: 12px; background: #fff;
+      margin: 8px; cursor: pointer;
+    }
+    .item:hover { border-color: #ddd; }
+    .itemName { font-weight: 700; margin-bottom: 4px; }
+    .itemMeta { font-size: 13px; color: #555; display: flex; gap: 8px; flex-wrap: wrap; }
+    .badge { font-size: 12px; border: 1px solid #e5e5e5; padding: 2px 8px; border-radius: 999px; color: #444; }
+
+    #mapWrap { position: relative; }
+    #map { height: 100%; width: 100%; }
+
+    /* Topbar */
+    #topbar{
+      position:absolute; z-index:1000; top:12px; left:12px; right:12px;
+      display:flex; gap:8px; flex-wrap:wrap; align-items:center;
+      background:rgba(255,255,255,.96); padding:10px; border-radius:14px;
+      box-shadow:0 10px 30px rgba(0,0,0,.12);
+    }
+    #search{
+      flex: 1 1 420px;
+      min-width: 260px;
+      padding:10px 12px;
+      border:1px solid #ddd;
+      border-radius:12px;
+    }
+    .chip{
+      border:1px solid #ddd; background:#fff; padding:8px 10px;
+      border-radius:999px; cursor:pointer;
+    }
+    .chip.active{ border-color:#111; }
+    #resetBtn{
+      margin-left: auto;
+      border: 1px solid #ddd;
+      background: #fff;
+      padding: 8px 10px;
+      border-radius: 12px;
+      cursor: pointer;
+    }
+    #countTop{
+      font-size: 13px;
+      color: #555;
+      padding: 6px 10px;
+      border: 1px solid #eee;
+      border-radius: 999px;
+      background: #fff;
+    }
+
+    /* Mobile */
+    @media (max-width: 900px) {
+      #app { grid-template-columns: 1fr; }
+      #sidebar { display: none; }
+      #topbar { left: 10px; right: 10px; }
+    }
+
+    /* Pétanque marker (knalgeel) */
+    .pet-icon {
+      width: 26px;
+      height: 26px;
+      border-radius: 999px;
+      background: #ffc700;
+      box-shadow: 0 8px 18px rgba(0,0,0,.18);
+      border: 2px solid rgba(0,0,0,.25);
+      position: relative;
+    }
+    .pet-icon:before{
+      content:"";
+      position:absolute;
+      inset:0;
+      border-radius:999px;
+      background:
+        radial-gradient(circle at 35% 35%, rgba(255,255,255,.75) 0 2px, transparent 3px),
+        radial-gradient(circle at 60% 45%, rgba(255,255,255,.65) 0 2px, transparent 3px),
+        radial-gradient(circle at 45% 65%, rgba(255,255,255,.55) 0 2px, transparent 3px);
+      mix-blend-mode: overlay;
+    }
+
+    /* Popup foto */
+    .popup-photo{
+      width: 100%;
+      max-width: 320px;
+      height: 160px;
+      object-fit: cover;
+      border-radius: 12px;
+      display:block;
+      margin: 8px 0 10px 0;
+      border: 1px solid rgba(0,0,0,.08);
+    }
+  </style>
+</head>
+<body>
+
+<div id="app">
+  <aside id="sidebar">
+    <div id="sidebarHeader">
+      <div id="sidebarTitle">Pétanquevelden</div>
+      <div id="sidebarMeta"><span id="countSide">…</span></div>
+    </div>
+    <div id="list"></div>
+  </aside>
+
+  <main id="mapWrap">
+    <div id="topbar">
+      <input id="search" placeholder="Zoek op naam, gemeente of postcode…" />
+      <button class="chip" data-filter="public">Openbaar</button>
+      <button class="chip" data-filter="club">Club</button>
+      <button class="chip" data-filter="indoor">Indoor</button>
+      <button class="chip" data-filter="lights">Verlichting</button>
+      <span id="countTop">…</span>
+      <button id="resetBtn" title="Reset">Reset</button>
+    </div>
+
+    <div id="map"></div>
+  </main>
+</div>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+<script>
+  // --- Map init (zoomknoppen niet boven je zoekbalk) ---
+  const map = L.map('map', { zoomControl: false }).setView([50.85, 4.35], 8);
+  L.control.zoom({ position: 'bottomright' }).addTo(map);
+
+  // Strakkere kaartstijl (CARTO light)
+  L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+    attribution: '&copy; OpenStreetMap contributors &copy; CARTO'
+  }).addTo(map);
+
+  // --- UI elements ---
+  const searchEl  = document.getElementById('search');
+  const countTop  = document.getElementById('countTop');
+  const countSide = document.getElementById('countSide');
+  const listEl    = document.getElementById('list');
+  const resetBtn  = document.getElementById('resetBtn');
+  const chipEls   = [...document.querySelectorAll('.chip')];
+
+  // --- State ---
+  let allFeatures = [];
+  let activeFilters = new Set();
+  let searchText = "";
+
+  const layerGroup = L.layerGroup().addTo(map);
+
+  function normalize(s) {
+    return (s || "").toString().trim().toLowerCase();
+  }
+
+  function passesFilters(p) {
+    if (activeFilters.has("public") && p.type !== "public") return false;
+    if (activeFilters.has("club") && p.type !== "club") return false;
+    if (activeFilters.has("indoor") && !p.indoor) return false;
+    if (activeFilters.has("lights") && !p.lights) return false;
+
+    if (searchText) {
+      const hay = normalize(`${p.name || ""} ${p.municipality || ""} ${p.postcode || ""}`);
+      if (!hay.includes(searchText)) return false;
+    }
+    return true;
+  }
+
+  function featureLatLng(f) {
+    const c = f.geometry?.coordinates; // [lng, lat]
+    return c ? [c[1], c[0]] : null;
+  }
+
+  function buildBadges(p) {
+    const out = [];
+    if (p.type) out.push(p.type === "public" ? "Openbaar" : "Club");
+    if (p.indoor === true) out.push("Indoor");
+    if (p.indoor === false) out.push("Outdoor");
+    if (p.lights) out.push("Verlichting");
+    if (p.lanes) out.push(`${p.lanes} banen`);
+    return out;
+  }
+
+  function renderList(features) {
+    listEl.innerHTML = "";
+    features.forEach((f) => {
+      const p = f.properties || {};
+      const name = p.name || "Pétanqueveld";
+      const muni = p.municipality || "";
+      const pc = p.postcode ? `(${p.postcode})` : "";
+      const badges = buildBadges(p);
+
+      const div = document.createElement("div");
+      div.className = "item";
+      div.innerHTML = `
+        <div class="itemName">${name}</div>
+        <div class="itemMeta">
+          <span>${muni} ${pc}</span>
+          ${badges.map(b => `<span class="badge">${b}</span>`).join("")}
+        </div>
+      `;
+
+      div.addEventListener("click", () => {
+        const ll = featureLatLng(f);
+        if (!ll) return;
+        map.setView(ll, 16, { animate: true });
+      });
+
+      listEl.appendChild(div);
+    });
+  }
+
+  function popupHtml(feature) {
+    const p = feature.properties || {};
+    const name = p.name || "Pétanqueveld";
+    const municipality = p.municipality || "";
+    const photo = p.photo || ""; // <-- HIER komt je foto-url of lokaal pad
+    const c = feature.geometry?.coordinates; // [lng, lat]
+    const lng = c?.[0];
+    const lat = c?.[1];
+    const googleMaps = (lat && lng) ? `https://www.google.com/maps?q=${lat},${lng}` : "#";
+
+    const imgHtml = photo
+      ? `<img class="popup-photo" src="${photo}" alt="${name}" loading="lazy" onerror="this.style.display='none'">`
+      : "";
+
+    return `
+      <div style="font-weight:800; margin-bottom:6px;">${name}</div>
+      <div style="color:#444; font-size:13px;">${municipality}</div>
+      ${imgHtml}
+      <a href="${googleMaps}" target="_blank" rel="noopener"
+         style="display:inline-block; padding:8px 10px; border:1px solid #ddd; border-radius:10px; text-decoration:none; color:#111;">
+        Navigeer
+      </a>
+    `;
+  }
+
+  // Pétanque “bal” marker (divIcon)
+  const petIcon = L.divIcon({
+    className: "",
+    html: `<div class="pet-icon"></div>`,
+    iconSize: [26, 26],
+    iconAnchor: [13, 13]
+  });
+
+  function render() {
+    layerGroup.clearLayers();
+
+    const filtered = allFeatures.filter(f => passesFilters(f.properties || {}));
+
+    const geoLayer = L.geoJSON(
+      { type: "FeatureCollection", features: filtered },
+      {
+        pointToLayer: (feature, latlng) => L.marker(latlng, { icon: petIcon }),
+        onEachFeature: (feature, layer) => layer.bindPopup(popupHtml(feature))
+      }
+    );
+
+    geoLayer.addTo(layerGroup);
+
+    const label = `${filtered.length} locaties`;
+    countTop.textContent = label;
+    countSide.textContent = label;
+
+    renderList(filtered);
+
+    if (filtered.length > 0) {
+      const bounds = geoLayer.getBounds();
+      if (bounds.isValid()) map.fitBounds(bounds, { padding: [40, 40] });
+    }
+  }
+
+  // --- Events ---
+  searchEl.addEventListener('input', (e) => {
+    searchText = normalize(e.target.value);
+    render();
+  });
+
+  chipEls.forEach(chip => {
+    chip.addEventListener('click', () => {
+      const key = chip.dataset.filter;
+      if (activeFilters.has(key)) {
+        activeFilters.delete(key);
+        chip.classList.remove('active');
+      } else {
+        activeFilters.add(key);
+        chip.classList.add('active');
+      }
+      render();
+    });
+  });
+
+  resetBtn.addEventListener("click", () => {
+    activeFilters = new Set();
+    chipEls.forEach(c => c.classList.remove("active"));
+    searchText = "";
+    searchEl.value = "";
+    render();
+  });
+
+  // --- Load data ---
+  fetch('data/fields.geojson')
+    .then(r => r.json())
+    .then(data => {
+      allFeatures = data.features || [];
+      render();
+    })
+    .catch(err => {
+      console.error(err);
+      countTop.textContent = "Data kon niet geladen worden.";
+      countSide.textContent = "Data kon niet geladen worden.";
+    });
+</script>
+
+</body>
+</html>
